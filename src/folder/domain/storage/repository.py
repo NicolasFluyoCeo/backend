@@ -4,15 +4,17 @@ from src.folder.domain.schema import Folder
 
 
 class FolderStorageRepositoryProtocol(Protocol):
-    async def save_folder(self, folder: Folder, company_id: str) -> None:
+    async def save_folder(self, folder: Folder, company_id: str, content: bytes, content_type: str) -> None:
         """
         Saves a folder to the storage.
 
         Args:
             folder (Folder): The folder to save.
             company_id (str): The ID of the company.
+            content (bytes): The content of the file.
+            content_type (str): The MIME type of the file.
 
-        The storage path would be: folders/{company_id}/{folder.path}/{folder.name}
+        The storage path would be: folders/{company_id}/{folder.file.name}
         """
         ...
 

@@ -1,8 +1,7 @@
 from fastapi import APIRouter, Depends, File, UploadFile
 
 from src.folder.application.service import FolderService
-from src.folder.domain.schema import File as FileSchema
-from src.folder.domain.schema import Folder
+from src.folder.domain.schema import FileNameDescriptionUrl, Folder
 from src.presentation.api.di.stub import get_folder_service_stub
 
 folder_router = APIRouter()
@@ -15,11 +14,20 @@ async def upload_folder(
     folder_service: FolderService = Depends(get_folder_service_stub),
 ):
     content = await file.read()
-    folder = Folder(
-        file=FileSchema(
-            name=file.filename, content=content, mimetype=file.content_type
-        ),
+    file_info = FileNameDescriptionUrl(
+        name=file.filename,
         description="",  # Puedes agregar una descripción si es necesario
     )
-    await folder_service.upload_folder(company_id, folder)
+    folder = Folder(
+        file=file_info,
+        description="",  # Puedes agregar una descripción si es necesario
+    )
+    await folder_service.upload_folder(company_id, folder, content, file.content_type)
     return {"message": "Folder uploaded successfully"}
+
+
+@folder_router.get("/list-folders")
+async def list_folders(
+    company_id: str, folder_service: FolderService = Depends(get_folder_service_stub)
+):
+    return await folder_service.list_folders(company_id)

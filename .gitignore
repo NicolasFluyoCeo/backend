@@ -91,3 +91,4 @@ Thumbs.db
 .coverage
 htmlcov/
 .vscode
+credentials_google.json

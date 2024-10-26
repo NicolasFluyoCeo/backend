@@ -1,6 +1,8 @@
+import json
 from datetime import datetime, timedelta, timezone
 
 from google.cloud import storage
+from google.oauth2 import service_account
 
 from src.core.domain.storage.protocols import StorageClientProtocol
 
@@ -14,15 +16,22 @@ class CloudStorageClient(StorageClientProtocol):
     download links.
     """
 
-    def __init__(self, project_id: str, bucket_name: str):
+    def __init__(self, bucket_name: str, project_id: str):
         """
         Initialize the CloudStorageClient.
 
         Args:
-            project_id (str): The Google Cloud project ID.
             bucket_name (str): The name of the storage bucket.
         """
-        self.client = storage.Client(project=project_id)
+        with open("credentials_google.json", "r") as credentials_file:
+            credentials_info = json.load(credentials_file)
+
+        credentials = service_account.Credentials.from_service_account_info(
+            credentials_info
+        )
+        self.client = storage.Client(
+            credentials=credentials, project=credentials_info["project_id"]
+        )
         self.bucket = self.client.bucket(bucket_name)
 
     async def upload_file(
@@ -40,7 +49,7 @@ class CloudStorageClient(StorageClientProtocol):
         blob = bucket.blob(destination_blob_name)
         blob.upload_from_string(file_content, content_type=content_type)
 
-    def download_file(self, source_blob_name: str, destination_file_name: str):
+    async def download_file(self, source_blob_name: str, destination_file_name: str):
         """
         Download a file from the storage bucket.
 
@@ -52,7 +61,7 @@ class CloudStorageClient(StorageClientProtocol):
         blob.download_to_filename(destination_file_name)
         print(f"File {source_blob_name} downloaded to {destination_file_name}.")
 
-    def delete_file(self, blob_name: str):
+    async def delete_file(self, blob_name: str):
         """
         Delete a file from the storage bucket.
 
@@ -63,7 +72,7 @@ class CloudStorageClient(StorageClientProtocol):
         blob.delete()
         print(f"File {blob_name} deleted.")
 
-    def list_files(self, prefix: str = None):
+    async def list_files(self, prefix: str = None):
         """
         List files in the storage bucket.
 
@@ -76,7 +85,7 @@ class CloudStorageClient(StorageClientProtocol):
         blobs = self.bucket.list_blobs(prefix=prefix)
         return [blob.name for blob in blobs]
 
-    def get_download_link(self, blob_name: str, expiration_time: int = 3600):
+    async def get_download_link(self, blob_name: str, expiration_time: int = 3600):
         """
         Get a temporary download link for a file.
 

@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import AnyUrl, BaseModel
 
 
 class File(BaseModel):
@@ -9,6 +9,12 @@ class File(BaseModel):
     mimetype: str
 
 
+class FileNameDescriptionUrl(BaseModel):
+    name: str
+    description: str
+    url: Optional[AnyUrl] = None
+
+
 class Folder(BaseModel):
-    file: Optional[File] = None
+    file: Optional[FileNameDescriptionUrl] = None
     description: str

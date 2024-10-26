@@ -1,0 +1,19 @@
+from typing import List, Optional, Protocol
+
+from src.company.domain.schema import CompanyInterface
+
+
+class CompanyRepository(Protocol):
+    async def create_company(self, company: CompanyInterface) -> CompanyInterface: ...
+
+    async def get_company_by_id(
+        self, company_id: str
+    ) -> Optional[CompanyInterface]: ...
+
+    async def get_company_by_nit(self, nit: str) -> Optional[CompanyInterface]: ...
+
+    async def update_company(self, company: CompanyInterface) -> CompanyInterface: ...
+
+    async def delete_company(self, company_id: str) -> bool: ...
+
+    async def get_all_companies(self) -> List[CompanyInterface]: ...

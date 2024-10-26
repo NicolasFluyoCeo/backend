@@ -2,6 +2,7 @@ from fastapi import FastAPI, status
 from fastapi.exceptions import RequestValidationError
 
 from src.company.presentation.routes import company_router
+from src.folder.presentation.routes import folder_router
 from src.presentation.api.commons.exception_handlers import (
     generic_exception_handler,
     not_found_exception_handler,
@@ -15,6 +16,7 @@ def create_app() -> FastAPI:
     app = FastAPI()
     app.include_router(user_router)
     app.include_router(company_router)
+    app.include_router(folder_router)
     setup_providers(app)
     app.add_exception_handler(Exception, handler=generic_exception_handler)
     app.add_exception_handler(

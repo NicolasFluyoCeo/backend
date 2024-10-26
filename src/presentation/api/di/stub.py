@@ -23,3 +23,17 @@ def get_company_repository_stub():
 
 def get_company_service_stub():
     raise NotImplementedError(NOT_IMPLEMENTED_MESSAGE)
+
+
+def get_auth_user_stub():
+    raise NotImplementedError(NOT_IMPLEMENTED_MESSAGE)
+
+
+def get_folder_storage_repository_stub():
+    raise NotImplementedError(NOT_IMPLEMENTED_MESSAGE)
+
+
+def get_folder_service_stub():
+    raise NotImplementedError(NOT_IMPLEMENTED_MESSAGE)
+
+

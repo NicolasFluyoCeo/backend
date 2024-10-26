@@ -1,4 +1,5 @@
-from fastapi import Depends
+from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from src.company.application.service import CompanyService
 from src.company.infra.db.mongodb.repoitories.repository import CompanyRepositoryImpl
@@ -7,11 +8,16 @@ from src.core.infra.db.mongodb.repository import (
     MongoDBRepositoryImpl,
     SessionTokenRepositoryImpl,
 )
+from src.core.infra.storage.cloud_storage.client import CloudStorageClient
+from src.folder.application.service import FolderService
+from src.folder.infra.storage.repository import FolderStorageRepository
 from src.presentation.api.di.stub import (
     get_company_repository_stub,
+    get_folder_storage_repository_stub,
     get_mongodb_repository_stub,
     get_session_token_repository_stub,
     get_user_repository_stub,
+    get_user_service_stub,
 )
 from src.users.application.service import UserService
 from src.users.domain.schema import UserRepository as UserRepositoryInterface
@@ -67,3 +73,27 @@ class InfrastructureProvider:
         ),
     ) -> CompanyService:
         return CompanyService(company_repository)
+
+    async def get_folder_storage_repository(self) -> FolderStorageRepository:
+        return FolderStorageRepository(CloudStorageClient(
+            bucket_name="fluyo_storage",
+            project_id="fluyo-project-433921",
+        ))
+
+    async def get_folder_service(
+        self,
+        folder_storage_repository: FolderStorageRepository = Depends(
+            get_folder_storage_repository_stub
+        ),
+    ) -> FolderService:
+        return FolderService(folder_storage_repository)
+
+
+async def auth_user(
+    credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer()),
+    user_service: UserService = Depends(get_user_service_stub),
+):
+    try:
+        return await user_service.get_user_info(credentials.credentials)
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))

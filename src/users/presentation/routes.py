@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from src.presentation.api.commons.response_model import BaseResponseModel
-from src.presentation.api.di.stub import get_user_service_stub
+from src.presentation.api.di.stub import get_auth_user_stub, get_user_service_stub
 from src.users.application.service import UserService
 from src.users.application.use_cases.login_user.exceptions import (
     IncorrectPasswordException,
@@ -85,10 +85,9 @@ async def login_user(
 @user_router.get("/hello")
 async def hello(
     credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer()),
-    user_service: UserService = Depends(get_user_service_stub),
+    user_info=Depends(get_auth_user_stub),
 ):
     try:
-        user_info = await user_service.get_user_info(credentials.credentials)
         return {"message": f"Hola, {user_info.username}!"}
     except UserNotFoundException as e:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))

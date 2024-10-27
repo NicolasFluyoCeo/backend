@@ -35,7 +35,6 @@ class GetUserInfoUseCase:
 
         # Validate that the token exists in the database and has not been revoked
         session = await self.session_token_repository.get_jwt_token(token)
-        print(session)
         if not session:
             raise TokenNotFoundException("There is an invalid token")
         if session.get("revoked"):
@@ -53,6 +52,9 @@ class GetUserInfoUseCase:
         user = await self.user_repository.get_user_by_id(user_id)
         if not user:
             raise UserNotFoundException(f"User with ID {user_id} not found")
+
+        if not user.is_active:
+            raise UserNotFoundException(f"User with ID {user_id} is not active")
 
         return UserReadInterface(
             id=user.id,

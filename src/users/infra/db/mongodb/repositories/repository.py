@@ -78,7 +78,7 @@ class UserRepositoryImpl(UserRepository):
             "password": user_data.password,
             "first_name": user_data.first_name,
             "last_name": user_data.last_name,
-            "is_active": True,
+            "is_active": False,
             "created_at": datetime.now(timezone.utc),
             "updated_at": datetime.now(timezone.utc),
             "role": user_data.role.value,

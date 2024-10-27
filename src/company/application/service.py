@@ -3,6 +3,9 @@ from typing import List
 from src.company.application.use_case.create_company.use_case import (
     CreateCompanyUseCase,
 )
+from src.company.application.use_case.get_company_info.use_case import (
+    GetCompanyInfoUseCase,
+)
 from src.company.application.use_case.list_company_by_user.use_case import (
     ListCompanyByUserUseCase,
 )
@@ -33,3 +36,7 @@ class CompanyService:
             self._company_repository, self._mongodb_repository
         )
         return await list_company_by_user_use_case(user_id)
+
+    async def get_company_info(self, company_id: str) -> CompanyInterface:
+        get_company_info_use_case = GetCompanyInfoUseCase(self._company_repository)
+        return await get_company_info_use_case(company_id)

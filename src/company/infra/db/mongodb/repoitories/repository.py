@@ -25,7 +25,11 @@ class CompanyRepositoryImpl(CompanyRepository):
         company = await self._mongodb_repository.find_one(
             self._collection, {"_id": ObjectId(company_id)}
         )
-        return CompanyInterface(**company) if company else None
+        if company:
+            company['id'] = str(company['_id'])
+            company['_id'] = str(company['_id'])
+            return CompanyInterface(**company)
+        return None
 
     async def get_company_by_nit(self, nit: str) -> Optional[CompanyInterface]:
         company = await self._mongodb_repository.find_one(

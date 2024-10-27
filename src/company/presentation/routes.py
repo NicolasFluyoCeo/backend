@@ -58,3 +58,20 @@ async def list_company_by_user(
     return BaseResponseModel(
         error=False, message="Empresas listadas exitosamente", data=companies_data
     )
+
+
+@company_router.get(
+    "/company/{company_id}", response_model=BaseResponseModel[Dict[str, Any]]
+)
+async def get_company_info(
+    company_id: str,
+    company_service: CompanyService = Depends(get_company_service_stub),
+    credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer()),
+):
+    company = await company_service.get_company_info(company_id)
+    print(company)
+    return BaseResponseModel(
+        error=False,
+        message="Información de la empresa obtenida exitosamente",
+        data=company.model_dump(),
+    )

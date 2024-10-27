@@ -66,12 +66,25 @@ async def list_company_by_user(
 async def get_company_info(
     company_id: str,
     company_service: CompanyService = Depends(get_company_service_stub),
+    user_info=Depends(get_auth_user_stub),
     credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer()),
 ):
-    company = await company_service.get_company_info(company_id)
-    print(company)
-    return BaseResponseModel(
-        error=False,
-        message="Información de la empresa obtenida exitosamente",
-        data=company.model_dump(),
-    )
+    try:
+        # Check if the user belongs to the company
+        companies = await company_service.list_company_by_user(user_info.id)
+        if not any(company.id == company_id for company in companies):
+            raise HTTPException(
+                status_code=403,
+                detail="You don't have permission to view this company's information",
+            )
+
+        company = await company_service.get_company_info(company_id)
+        return BaseResponseModel(
+            error=False,
+            message="Company information retrieved successfully",
+            data=company.model_dump(),
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Error retrieving company information: {str(e)}"
+        )

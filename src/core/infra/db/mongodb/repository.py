@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from typing import Any, List, Optional
 
+import jwt
 from bson import ObjectId
 
 from src.core.domain.db.schema import MongoDBRepository
@@ -82,9 +83,15 @@ class SessionTokenRepositoryImpl:
     def __init__(self, mongodb_repository: MongoDBRepositoryImpl):
         self._mongodb_repository = mongodb_repository
         self._session_collection = "sessions"
-        self._token_collection = "jwt_tokens"
+        self._token_collection = "sessions"
+        self._secret_key = (
+            "SECRET_KEY"  # Asegúrate de usar una clave secreta segura en producción
+        )
 
     async def create_session(self, session_data: dict) -> str:
+        # Revocar sesiones anteriores del usuario
+        await self.revoke_previous_sessions(session_data["user_id"])
+
         session_data["created_at"] = datetime.now(timezone.utc)
         result = await self._mongodb_repository.insert_one(
             self._session_collection, session_data
@@ -110,20 +117,33 @@ class SessionTokenRepositoryImpl:
         return result.deleted_count > 0
 
     async def store_jwt_token(self, token_data: dict) -> str:
+        # Revocar tokens anteriores del usuario
+        await self.revoke_previous_tokens(token_data["user_id"])
+
+        # Crear un nuevo token JWT
+        new_token = jwt.encode(token_data, self._secret_key, algorithm="HS256")
+
+        token_data["token"] = new_token
         token_data["created_at"] = datetime.now(timezone.utc)
         result = await self._mongodb_repository.insert_one(
-            self._session_collection, token_data
+            self._token_collection, token_data
         )
-        return str(result.inserted_id)
+        return new_token
 
     async def get_jwt_token(self, token: str) -> Optional[dict]:
-        return await self._mongodb_repository.find_one(
-            self._session_collection, {"token": token}
+        result = await self._mongodb_repository.find_one(
+            self._token_collection, {"token": token}
         )
+        if result is None:
+            # Buscar el token en la colección completa para depuración
+            all_tokens = await self._mongodb_repository.find_many(
+                self._token_collection, {}
+            )
+        return result
 
     async def revoke_jwt_token(self, token: str) -> bool:
         result = await self._mongodb_repository.update_one(
-            self._session_collection,
+            self._token_collection,
             {"token": token},
             {"$set": {"revoked": True, "revoked_at": datetime.now(timezone.utc)}},
         )
@@ -131,4 +151,18 @@ class SessionTokenRepositoryImpl:
 
     async def validate_session(self, token: str) -> bool:
         session = await self.get_session(token)
-        return session is not None and not session["revoked"]
+        return session is not None and not session.get("revoked", False)
+
+    async def revoke_previous_sessions(self, user_id: str) -> None:
+        await self._mongodb_repository.update_many(
+            self._session_collection,
+            {"user_id": user_id, "revoked": {"$ne": True}},
+            {"$set": {"revoked": True, "revoked_at": datetime.now(timezone.utc)}},
+        )
+
+    async def revoke_previous_tokens(self, user_id: str) -> None:
+        await self._mongodb_repository.update_many(
+            self._token_collection,
+            {"user_id": user_id, "revoked": {"$ne": True}},
+            {"$set": {"revoked": True, "revoked_at": datetime.now(timezone.utc)}},
+        )

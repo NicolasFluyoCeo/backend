@@ -1,7 +1,7 @@
 from typing import List
 
 from src.core.domain.storage.protocols import StorageClientProtocol
-from src.folder.domain.schema import File, Folder, FileNameDescriptionUrl
+from src.folder.domain.schema import FileNameDescriptionUrl, Folder
 from src.folder.domain.storage.repository import FolderStorageRepositoryProtocol
 
 
@@ -9,16 +9,15 @@ class FolderStorageRepository(FolderStorageRepositoryProtocol):
     def __init__(self, storage_client: StorageClientProtocol):
         self.storage_client = storage_client
 
-    async def save_folder(self, folder: Folder, company_id: str, content: bytes, content_type: str):
+    async def save_folder(
+        self, folder: Folder, company_id: str, content: bytes, content_type: str
+    ):
         path = f"folders/{company_id}/{folder.file.name}"
-        await self.storage_client.upload_file(
-            content, path, content_type
-        )
-        url = await self.storage_client.get_download_link(path)
+        await self.storage_client.upload_file(content, path, content_type)
         folder.file = FileNameDescriptionUrl(
             name=folder.file.name,
             description=folder.description,
-            url=url
+            path=path,
         )
         return folder
 
@@ -37,14 +36,18 @@ class FolderStorageRepository(FolderStorageRepositoryProtocol):
         folders = []
         for file in files:
             try:
-                url = await self.storage_client.get_download_link(f"{file}")  # Cambiado de f"{path}/{file}" a f"{file}"
+                url = await self.storage_client.get_download_link(
+                    f"{file}"
+                )  # Cambiado de f"{path}/{file}" a f"{file}"
                 file_info = FileNameDescriptionUrl(
                     name=file,
                     description="",  # Puedes ajustar esto si tienes una forma de obtener la descripción
-                    url=url
+                    url=url,
                 )
                 folders.append(Folder(file=file_info, description=""))
-            except Exception as e:
-                print(f"Error al procesar el archivo {file}: {str(e)}")
+            except Exception:
                 continue  # Salta al siguiente archivo si hay un error
         return folders
+
+    async def get_url(self, path: str) -> str:
+        return await self.storage_client.get_download_link(f"{path}")

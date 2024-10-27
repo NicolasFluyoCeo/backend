@@ -36,4 +36,6 @@ def get_folder_storage_repository_stub():
 def get_folder_service_stub():
     raise NotImplementedError(NOT_IMPLEMENTED_MESSAGE)
 
+def get_folder_repository_stub():
+    raise NotImplementedError(NOT_IMPLEMENTED_MESSAGE)
 

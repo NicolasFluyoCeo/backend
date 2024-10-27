@@ -4,7 +4,9 @@ from src.folder.domain.schema import Folder
 
 
 class FolderStorageRepositoryProtocol(Protocol):
-    async def save_folder(self, folder: Folder, company_id: str, content: bytes, content_type: str) -> None:
+    async def save_folder(
+        self, folder: Folder, company_id: str, content: bytes, content_type: str
+    ) -> None:
         """
         Saves a folder to the storage.
 
@@ -49,5 +51,11 @@ class FolderStorageRepositoryProtocol(Protocol):
     async def list_folders(self, company_id: str) -> List[Folder]:
         """
         Lists all folders for a company.
+        """
+        ...
+
+    async def get_url(self, path: str) -> str:
+        """
+        Gets the URL of a file.
         """
         ...

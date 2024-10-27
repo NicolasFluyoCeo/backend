@@ -6,6 +6,8 @@ from src.company.domain.protocols import CompanyRepository
 from src.company.domain.schema import CompanyInterface
 from src.core.infra.db.mongodb.repository import MongoDBRepository
 
+# Add this new exception at the beginning of the file
+
 
 class CompanyRepositoryImpl(CompanyRepository):
     def __init__(self, mongodb_repository: MongoDBRepository):
@@ -13,13 +15,11 @@ class CompanyRepositoryImpl(CompanyRepository):
         self._collection = "companies"
 
     async def create_company(self, company: CompanyInterface) -> CompanyInterface:
-        company_dict = company.model_dump()
+        company_dict = company.model_dump(exclude={"id"}, by_alias=True)
         result = await self._mongodb_repository.insert_one(
             self._collection, company_dict
         )
-        return self._create_company_interface(
-            {**company_dict, "_id": result.inserted_id}
-        )
+        return CompanyInterface.model_validate({"_id": str(result.inserted_id), **company_dict})
 
     async def get_company_by_id(self, company_id: str) -> Optional[CompanyInterface]:
         company = await self._mongodb_repository.find_one(
@@ -51,7 +51,7 @@ class CompanyRepositoryImpl(CompanyRepository):
 
     def _create_company_interface(self, company_data: dict) -> CompanyInterface:
         company_data_copy = company_data.copy()
-        company_id = str(company_data_copy.pop('_id'))
-        # Asegúrate de que 'id' no esté en company_data_copy
-        company_data_copy.pop('id', None)
+        company_id = str(company_data_copy.pop("_id"))
+        # Make sure 'id' is not in company_data_copy
+        company_data_copy.pop("id", None)
         return CompanyInterface(id=company_id, **company_data_copy)

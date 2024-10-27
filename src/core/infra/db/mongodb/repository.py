@@ -1,6 +1,8 @@
 from datetime import datetime, timezone
 from typing import Any, List, Optional
 
+from bson import ObjectId
+
 from src.core.domain.db.schema import MongoDBRepository
 from src.core.infra.db.mongodb.client import Client
 
@@ -35,32 +37,44 @@ class MongoDBRepositoryImpl(MongoDBRepository):
     async def find_one(self, collection: str, query: dict) -> dict:
         await self.initialize()
         collection = await self._client.get_collection(collection)
+        if "_id" in query:
+            query["_id"] = ObjectId(query["_id"])
         return await collection.find_one(query)
 
     async def find_many(self, collection: str, query: dict) -> List[dict]:
         await self.initialize()
         collection = await self._client.get_collection(collection)
+        if "_id" in query:
+            query["_id"] = ObjectId(query["_id"])
         cursor = collection.find(query)
         return await cursor.to_list(length=None)
 
     async def update_one(self, collection: str, query: dict, update: dict) -> Any:
         await self.initialize()
         collection = await self._client.get_collection(collection)
+        if "_id" in query:
+            query["_id"] = ObjectId(query["_id"])
         return await collection.update_one(query, update)
 
     async def update_many(self, collection: str, query: dict, update: dict) -> Any:
         await self.initialize()
         collection = await self._client.get_collection(collection)
+        if "_id" in query:
+            query["_id"] = ObjectId(query["_id"])
         return await collection.update_many(query, update)
 
     async def delete_one(self, collection: str, query: dict) -> Any:
         await self.initialize()
         collection = await self._client.get_collection(collection)
+        if "_id" in query:
+            query["_id"] = ObjectId(query["_id"])
         return await collection.delete_one(query)
 
     async def delete_many(self, collection: str, query: dict) -> Any:
         await self.initialize()
         collection = await self._client.get_collection(collection)
+        if "_id" in query:
+            query["_id"] = ObjectId(query["_id"])
         return await collection.delete_many(query)
 
 

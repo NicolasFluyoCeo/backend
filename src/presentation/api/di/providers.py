@@ -10,9 +10,11 @@ from src.core.infra.db.mongodb.repository import (
 )
 from src.core.infra.storage.cloud_storage.client import CloudStorageClient
 from src.folder.application.service import FolderService
+from src.folder.infra.db.mongodb.repositories.repository import FolderRepositoryImpl
 from src.folder.infra.storage.repository import FolderStorageRepository
 from src.presentation.api.di.stub import (
     get_company_repository_stub,
+    get_folder_repository_stub,
     get_folder_storage_repository_stub,
     get_mongodb_repository_stub,
     get_session_token_repository_stub,
@@ -71,22 +73,36 @@ class InfrastructureProvider:
         company_repository: CompanyRepositoryImpl = Depends(
             get_company_repository_stub
         ),
+        mongodb_repository: MongoDBRepositoryImpl = Depends(
+            get_mongodb_repository_stub
+        ),
     ) -> CompanyService:
-        return CompanyService(company_repository)
+        return CompanyService(company_repository, mongodb_repository)
 
     async def get_folder_storage_repository(self) -> FolderStorageRepository:
-        return FolderStorageRepository(CloudStorageClient(
-            bucket_name="fluyo_storage",
-            project_id="fluyo-project-433921",
-        ))
+        return FolderStorageRepository(
+            CloudStorageClient(
+                bucket_name="fluyo_storage",
+                project_id="fluyo-project-433921",
+            )
+        )
 
     async def get_folder_service(
         self,
         folder_storage_repository: FolderStorageRepository = Depends(
             get_folder_storage_repository_stub
         ),
+        folder_repository: FolderRepositoryImpl = Depends(get_folder_repository_stub),
     ) -> FolderService:
-        return FolderService(folder_storage_repository)
+        return FolderService(folder_storage_repository, folder_repository)
+
+    async def get_folder_repository(
+        self,
+        mongodb_repository: MongoDBRepositoryImpl = Depends(
+            get_mongodb_repository_stub
+        ),
+    ) -> FolderRepositoryImpl:
+        return FolderRepositoryImpl(mongodb_repository)
 
 
 async def auth_user(

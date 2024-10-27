@@ -59,7 +59,6 @@ class CloudStorageClient(StorageClientProtocol):
         """
         blob = self.bucket.blob(source_blob_name)
         blob.download_to_filename(destination_file_name)
-        print(f"File {source_blob_name} downloaded to {destination_file_name}.")
 
     async def delete_file(self, blob_name: str):
         """
@@ -70,7 +69,7 @@ class CloudStorageClient(StorageClientProtocol):
         """
         blob = self.bucket.blob(blob_name)
         blob.delete()
-        print(f"File {blob_name} deleted.")
+        (f"File {blob_name} deleted.")
 
     async def list_files(self, prefix: str = None):
         """

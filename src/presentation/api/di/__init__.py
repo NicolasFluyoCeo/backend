@@ -5,6 +5,7 @@ from src.presentation.api.di.stub import (
     get_auth_user_stub,
     get_company_repository_stub,
     get_company_service_stub,
+    get_folder_repository_stub,
     get_folder_service_stub,
     get_folder_storage_repository_stub,
     get_mongodb_repository_stub,
@@ -41,4 +42,7 @@ def setup_providers(app: FastAPI):
     )
     app.dependency_overrides[get_folder_service_stub] = (
         infrastructure_provider.get_folder_service
+    )
+    app.dependency_overrides[get_folder_repository_stub] = (
+        infrastructure_provider.get_folder_repository
     )

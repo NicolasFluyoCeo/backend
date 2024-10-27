@@ -23,7 +23,7 @@ from src.users.domain.schema import (
     UserReadInterface,
 )
 
-user_router = APIRouter()
+user_router = APIRouter(tags=["users"])
 
 
 @user_router.post(

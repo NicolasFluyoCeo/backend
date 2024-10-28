@@ -1,0 +1,17 @@
+[run]
+omit = 
+    */dummy/*
+    *dummy*
+    */tests/*
+    */__init__.py
+    */di/*
+    *di*
+    */domain/*
+    *domain*
+    */presentation/*
+    *presentation*
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    raise NotImplementedError

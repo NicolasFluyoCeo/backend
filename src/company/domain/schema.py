@@ -15,7 +15,6 @@ class CompanyInterface(BaseModel):
 
     class Config:
         populate_by_name = True
-        allow_population_by_field_name = True
 
     @classmethod
     def model_validate(cls, obj: Any) -> "CompanyInterface":

@@ -1,3 +1,4 @@
+import logfire
 from fastapi import FastAPI, status
 from fastapi.exceptions import RequestValidationError
 
@@ -10,6 +11,8 @@ from src.presentation.api.commons.exception_handlers import (
 )
 from src.presentation.api.di import setup_providers
 from src.users.presentation.routes import user_router
+
+LOGFIRE_TOKEN = "nl8p4kHkSvn7JXLNDRpwtfTCXGB6pzt42LKSDTrdK62S"
 
 
 def create_app() -> FastAPI:
@@ -28,4 +31,8 @@ def create_app() -> FastAPI:
     return app
 
 
+logfire.configure(token=LOGFIRE_TOKEN)
 app = create_app()
+logfire.instrument_fastapi(app)
+logfire.configure(pydantic_plugin=logfire.PydanticPlugin(record="all"))
+logfire.instrument_pymongo()

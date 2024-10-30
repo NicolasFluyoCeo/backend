@@ -23,11 +23,11 @@ from src.users.domain.schema import (
     UserReadInterface,
 )
 
-user_router = APIRouter(tags=["users"])
+user_router = APIRouter(tags=["users"], prefix="/user")
 
 
 @user_router.post(
-    "/users",
+    "",
     responses={
         status.HTTP_201_CREATED: {"model": BaseResponseModel[UserReadInterface]},
         status.HTTP_400_BAD_REQUEST: {"model": BaseResponseModel[Dict]},

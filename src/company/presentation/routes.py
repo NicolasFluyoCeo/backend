@@ -15,10 +15,10 @@ from src.company.domain.schema import CompanyDataInterface
 from src.presentation.api.commons.response_model import BaseResponseModel
 from src.presentation.api.di.stub import get_auth_user_stub, get_company_service_stub
 
-company_router = APIRouter(tags=["company"])
+company_router = APIRouter(tags=["company"], prefix="/company")
 
 
-@company_router.post("/company", response_model=BaseResponseModel[Dict[str, Any]])
+@company_router.post("", response_model=BaseResponseModel[Dict[str, Any]])
 async def create_company(
     company_data: CompanyDataInterface,
     company_service: CompanyService = Depends(get_company_service_stub),
@@ -47,7 +47,7 @@ async def create_company(
         raise HTTPException(status_code=500, detail="Error creating the company")
 
 
-@company_router.get("/company", response_model=BaseResponseModel[List[Dict[str, Any]]])
+@company_router.get("", response_model=BaseResponseModel[List[Dict[str, Any]]])
 async def list_company_by_user(
     company_service: CompanyService = Depends(get_company_service_stub),
     user_info=Depends(get_auth_user_stub),
@@ -61,7 +61,7 @@ async def list_company_by_user(
 
 
 @company_router.get(
-    "/company/{company_id}", response_model=BaseResponseModel[Dict[str, Any]]
+    "/{company_id}", response_model=BaseResponseModel[Dict[str, Any]]
 )
 async def get_company_info(
     company_id: str,
